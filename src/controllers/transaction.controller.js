@@ -18,12 +18,12 @@ const emailService = require('../services/email.service');
 
 async function createTransaction(req, res) {
     // 1. Validate Request
-    const { fromAccount, toAccout, amount, idemPotencyKey } = req.body;
+    const { fromAccount, toAccount, amount, idemPotencyKey } = req.body;
     if (!fromAccount || !toAccount || !amount || !idemPotencyKey) {
         return res.status(400).json({ message: 'Missing required fields: fromAccount, toAccount, amount and idemPotencyKey are required' });
     }
     const fromUserAccount = await accountModel.findOne({ _id: fromAccount });
-    const toUserAccount = await accountModel.toUserAccount.findOne({ _id: toAccout });
+    const toUserAccount = await accountModel.toUserAccount.findOne({ _id: toAccount });
     if (!fromUserAccount || !toUserAccount) {
         return res.status(400).json({ message: 'Invalid fromAccount or toAccount' });
     }
@@ -32,6 +32,7 @@ async function createTransaction(req, res) {
     // 2. Validate IdemPotency Key
 
     const isTransactionAlreadyExists = await transactionModel.findOne({
+
         idemPotencyKey: idemPotencyKey,
     });
     if (isTransactionAlreadyExists) {
