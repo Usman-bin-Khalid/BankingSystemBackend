@@ -10,3 +10,8 @@ app.use(cookieParser());
 app.use('/api/auth', authRouter);
 
 module.exports = app;
+
+
+// app.js file ky 2 purpose hoty hyn 
+// 1. Server ko create krna
+// 2. Server ko configure krna
