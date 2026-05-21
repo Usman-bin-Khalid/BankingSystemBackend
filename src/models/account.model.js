@@ -9,8 +9,10 @@ const accountSchema = new mongoose.Schema({
         index : true // Indexing the user field for faster queries
     } ,
     status : {
-        enum : ['ACTIVE' , 'FROZEN', 'CLOSED'],
+        type : String,
+                enum : ['ACTIVE' , 'FROZEN', 'CLOSED'],
         message : 'Status can be either ACTIVE, FROZEN or CLOSED',
+        default : 'ACTIVE',
     },
     currency : {
         type : String,
