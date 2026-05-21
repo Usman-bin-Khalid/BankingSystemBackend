@@ -7,6 +7,6 @@ const accountController = require('../controllers/account.controller');
 const router = express.Router();
 
 // Create Account
-router.post('/create', authMiddleware.authMiddleware, accountController.createAccountController);
+router.post('/create', authMiddleware, accountController.createAccountController);
 
 module.exports = router;
