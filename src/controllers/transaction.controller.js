@@ -1,4 +1,4 @@
-const transactionModel = require('../models/transaction.model');
+const transactionModel = require('../models/transactions.models');
 const ledgerModel = require('../models/ledger.model');
 const accountModel = require('../models/account.model');
 const emailService = require('../services/email.service');
