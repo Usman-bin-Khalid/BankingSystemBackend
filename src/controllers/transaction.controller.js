@@ -2,6 +2,7 @@ const transactionModel = require('../models/transaction.model');
 const ledgerModel = require('../models/ledger.model');
 const accountModel = require('../models/account.model');
 const emailService = require('../services/email.service');
+const mongoose = require('mongoose');
 
 // Create a new transction:
 // The 10 STEP TRANSFER FLOW:
@@ -75,4 +76,40 @@ async function createTransaction(req, res) {
 
     }
 
+    // 5. Create Transaction (PENDING)
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    // startSession mongodb provide krta hy jis mai ya to sb kuch complete hoga ya sb kuch fail hoga, agar beech mai koi error aata hy to wo automatically roll back kr dega aur agar sb kuch sahi chala to wo commit kr dega
+    const transaction = await transactionModel.create({
+        fromAccount, toAccount, amount, idemPotencyKey, status: 'PENDING'
+    },{session})
+    
+    const debitLedgerEntry = await ledgerModel.create({
+        account : fromAccount,
+        amount : amount,
+        type : 'DEBIT',
+        transaction : transaction._id,
+       
+    }, {session})
+    
+    const creditLedgerEntry = await ledgerModel.create({
+        account : toAccount,
+        amount : amount,
+        transaction : transaction._id,
+        type : 'CREDIT'
+    }, {session})
+
+    transaction.status = 'COMPLETED';
+    await transaction.save({session});
+    await session.commitTransaction();
+    session.endSession();
+    
+    // 10. Send Email Notification
+    await emailService.sendRegistrationEmail(req.user.email, req.user.name, amount , toAccount);
+    return res.status(201).json({message : 'Transaction completed successfully', transaction});
+   
+}
+
+module.exports = {
+    createTransaction
 }
