@@ -27,7 +27,12 @@ async function authSystemUserMiddleware(req, res, next) {
 
    try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await userModel.findById(decoded.userId).select('+systemUser');;
+        const user = await userModel.findById(decoded.userId).select('+systemUser');
+        if (!user.systemUser) {
+         return res.status(403).json({ message: 'Forbidden, user is not a system user' });
+        }
+        req.user = user;
+         return next();
    } catch (error) {
       return res.status(401).json({ message: 'Unauthorized, token is invalid' });
    }
@@ -38,4 +43,4 @@ async function authSystemUserMiddleware(req, res, next) {
 
 
 
-module.exports = { authMiddleware };
+module.exports = { authMiddleware, authSystemUserMiddleware };

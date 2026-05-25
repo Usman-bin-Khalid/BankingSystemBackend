@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema({
         select: false
     },
 
+     // This field is used to differentiate between regular users and system users (like admin or service accounts)
+     // Is ko hum by default select false kryn gain
     systemUser : {
         type : Boolean,
         default : false,
