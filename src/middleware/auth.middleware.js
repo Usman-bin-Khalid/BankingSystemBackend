@@ -20,7 +20,7 @@ async function authMiddleware(req, res, next) {
 }
 
 async function authSystemUserMiddleware(req, res, next) {
-   const token = req.cookies?.tokein || re.headers.authorization?.split(' ')[1];
+   const token = req.cookies?.token || re.headers.authorization?.split(' ')[1];
    if (!token) {
       return res.status(401).json({ message: 'Unauthorized, token is missing' });
    }
