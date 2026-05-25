@@ -66,12 +66,12 @@ async function createTransaction(req, res) {
             message: 'Both fromAccount and toAccount must be active to process the transaction'
         })
     }
-   
+
     // 4. Derive Sender Balance from Ledger
     const balance = await fromUserAccount.getBalance();
     if (balance < amount) {
-       return res.status(400).json({
-            message : `Insufficient balance. Current balance is ${balance}.  Requested amount is ${amount}`
+        return res.status(400).json({
+            message: `Insufficient balance. Current balance is ${balance}.  Requested amount is ${amount}`
         })
 
     }
@@ -82,32 +82,32 @@ async function createTransaction(req, res) {
     // startSession mongodb provide krta hy jis mai ya to sb kuch complete hoga ya sb kuch fail hoga, agar beech mai koi error aata hy to wo automatically roll back kr dega aur agar sb kuch sahi chala to wo commit kr dega
     const transaction = await transactionModel.create({
         fromAccount, toAccount, amount, idemPotencyKey, status: 'PENDING'
-    },{session})
-    
+    }, { session })
+
     const debitLedgerEntry = await ledgerModel.create({
-        account : fromAccount,
-        amount : amount,
-        type : 'DEBIT',
-        transaction : transaction._id,
-       
-    }, {session})
-    
+        account: fromAccount,
+        amount: amount,
+        type: 'DEBIT',
+        transaction: transaction._id,
+
+    }, { session })
+
     const creditLedgerEntry = await ledgerModel.create({
-        account : toAccount,
-        amount : amount,
-        transaction : transaction._id,
-        type : 'CREDIT'
-    }, {session})
+        account: toAccount,
+        amount: amount,
+        transaction: transaction._id,
+        type: 'CREDIT'
+    }, { session })
 
     transaction.status = 'COMPLETED';
-    await transaction.save({session});
+    await transaction.save({ session });
     await session.commitTransaction();
     session.endSession();
-    
+
     // 10. Send Email Notification
-    await emailService.sendRegistrationEmail(req.user.email, req.user.name, amount , toAccount);
-    return res.status(201).json({message : 'Transaction completed successfully', transaction});
-   
+    await emailService.sendRegistrationEmail(req.user.email, req.user.name, amount, toAccount);
+    return res.status(201).json({ message: 'Transaction completed successfully', transaction });
+
 }
 
 module.exports = {

@@ -47,9 +47,24 @@ async function sendRegistrationEmail(userEmail, name ) {
 
 }
 
+async function sendTransactionEmail (userEmail , name, amount, toAccount) {
+    const subject = 'Transaction Successful';
+    const text = `Hello ${name},\n\nYour transaction of amount ${amount} to account ${toAccount} has been successful.\n\nBest regards,\nBackend Banking System Team`;
+    const html = `<p>Hello ${name},</p><p>Your transaction of amount ${amount} to account ${toAccount} has been successful.</p><p>Best regards,<br/>Backend Banking System Team</p>`;
+    await sendEmail(userEmail, subject, text, html);
+    await sendEmail(userEmail, subject, text, html);
+
+}
+async function sendTransactionFailureEmail (userEmail , name, amount, toAccount) {
+    const subject = 'Transaction Failed';
+    const text = `Hello ${name},\n\nWe regret to inform you that your transaction of amount ${amount} to account ${toAccount} has failed. Please try again later or contact support for assistance.\n\nBest regards,\nBackend Banking System Team`;
+    const html = `<p>Hello ${name},</p><p>We regret to inform you that your transaction of amount ${amount} to account ${toAccount} has failed. Please try again later or contact support for assistance.</p><p>Best regards,<br/>Backend Banking System Team</p>`;
+    await sendEmail(userEmail, subject, text, html);
+}
+
 // Jis user ko email send honi chahiye usko tester mai lazmi add krna hai taki email send ho sake 
 // warna error aayega kyunki email send karne ke liye lazmi hai ki email address valid ho
 //  aur us email address par email send karne ki permission ho
 
-module.exports =  {sendRegistrationEmail};
+module.exports =  {sendRegistrationEmail, sendTransactionEmail, sendTransactionFailureEmail};
 
