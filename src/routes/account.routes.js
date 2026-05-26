@@ -9,4 +9,8 @@ const router = express.Router();
 // Create Account
 router.post('/create', authMiddleware, accountController.createAccountController);
 
+router.get('/get', authMiddleware, accountController.getUserAccountsController);
+
+router.get('/balance/:accountId' , authMiddleware, accountController.getBalanceAccountController);
+
 module.exports = router;
