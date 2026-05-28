@@ -7,7 +7,6 @@ const accountSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : 'user',
         required : [true, 'Account must be associated with a user'],
-        index : true // Indexing the user field for faster queries
     } ,
     status : {
         type : String,
@@ -22,7 +21,7 @@ const accountSchema = new mongoose.Schema({
     }
 }, {timestamps : true});
 
-accountSchema.index({user : 1} , {status : 1})
+accountSchema.index({user : 1, status : 1})
 
 accountSchema.methods.getBalance = async function() {
     const balanceData = await ledgerModel.aggregate([

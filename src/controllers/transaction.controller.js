@@ -24,7 +24,7 @@ async function createTransaction(req, res) {
         return res.status(400).json({ message: 'Missing required fields: fromAccount, toAccount, amount and idemPotencyKey are required' });
     }
     const fromUserAccount = await accountModel.findOne({ _id: fromAccount });
-    const toUserAccount = await accountModel.toUserAccount.findOne({ _id: toAccount });
+    const toUserAccount = await accountModel.findOne({ _id: toAccount });
     if (!fromUserAccount || !toUserAccount) {
         return res.status(400).json({ message: 'Invalid fromAccount or toAccount' });
     }
@@ -42,7 +42,7 @@ async function createTransaction(req, res) {
             return res.status(200).json({ message: 'Transaction already completed', transaction: isTransactionAlreadyExists });
         }
         if (isTransactionAlreadyExists.status === 'PENDING') {
-            message: 'Transaction is still processing'
+            return res.status(409).json({ message: 'Transaction is still processing' });
         }
         if (isTransactionAlreadyExists.status === 'FAILED') {
             return res.status(500).json({
@@ -80,24 +80,24 @@ async function createTransaction(req, res) {
     const session = await mongoose.startSession();
     session.startTransaction();
     // startSession mongodb provide krta hy jis mai ya to sb kuch complete hoga ya sb kuch fail hoga, agar beech mai koi error aata hy to wo automatically roll back kr dega aur agar sb kuch sahi chala to wo commit kr dega
-    const transaction = await transactionModel.create({
+    const transaction = new transactionModel({
         fromAccount, toAccount, amount, idemPotencyKey, status: 'PENDING'
-    }, { session })
+    })
 
-    const debitLedgerEntry = await ledgerModel.create({
+    const debitLedgerEntry = await ledgerModel.create([{
         account: fromAccount,
         amount: amount,
         type: 'DEBIT',
         transaction: transaction._id,
 
-    }, { session })
+    }], { session })
 
-    const creditLedgerEntry = await ledgerModel.create({
+    const creditLedgerEntry = await ledgerModel.create([{
         account: toAccount,
         amount: amount,
         transaction: transaction._id,
         type: 'CREDIT'
-    }, { session })
+    }], { session })
 
     transaction.status = 'COMPLETED';
     await transaction.save({ session });

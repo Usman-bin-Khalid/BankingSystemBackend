@@ -29,7 +29,6 @@ const transactionSchema = new mongoose.Schema({
     idemPotencyKey : {
         type : String,
         required : [true, 'Idempotency key is required for creating a transactions'],
-        index : true,
         unique : true,
     }
 }, {timestamps : true});
