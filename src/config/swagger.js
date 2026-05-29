@@ -1,6 +1,26 @@
 const swaggerJSDoc = require('swagger-jsdoc');
 const path = require('path');
 
+// Build the `servers` list dynamically so Swagger UI always targets the right host.
+// On Render, RENDER_EXTERNAL_URL is auto-injected (e.g. https://bankingsystembackend-eq68.onrender.com).
+// Locally, fall back to localhost so "Try it out" hits your dev server.
+function buildServers() {
+    const servers = [];
+    const renderUrl = process.env.RENDER_EXTERNAL_URL;
+    const publicUrl = process.env.PUBLIC_URL;
+    if (renderUrl) {
+        servers.push({ url: renderUrl, description: 'Live production server (Render)' });
+    }
+    if (publicUrl && publicUrl !== renderUrl) {
+        servers.push({ url: publicUrl, description: 'Public server' });
+    }
+    servers.push({
+        url: `http://localhost:${process.env.PORT || 5001}`,
+        description: 'Local development server'
+    });
+    return servers;
+}
+
 const options = {
     definition: {
         openapi: '3.0.3',
@@ -45,16 +65,7 @@ A production-style **double-entry bookkeeping** banking backend.
                 name: 'ISC',
             },
         },
-        servers: [
-            {
-                url: 'http://localhost:5001',
-                description: 'Local development server'
-            },
-            {
-                url: 'https://bank-ledger-system.onrender.com',
-                description: 'Production server (Render) — update this URL after deployment'
-            }
-        ],
+        servers: buildServers(),
         tags: [
             { name: 'Auth', description: 'User registration, login and logout' },
             { name: 'Accounts', description: 'Create accounts and check balances' },

@@ -106,13 +106,65 @@ Update the **second `servers` entry** in [`src/config/swagger.js`](./src/config/
 
 ---
 
+## Email on Render — important
+
+**Render's free tier blocks outbound SMTP** (ports 25 / 465 / 587). That means the
+Nodemailer + Gmail OAuth2 path will fail with `ETIMEDOUT` on Render free — even
+though OAuth2 uses an HTTP token exchange, the actual mail send still goes over
+SMTP to `smtp.gmail.com:465`.
+
+The app handles this gracefully:
+- No more startup `transporter.verify()` spam in logs.
+- Email sends are fire-and-forget — registration / transactions still succeed.
+- Set `EMAIL_ENABLED=false` in Render env vars to skip the attempt entirely
+  (cleanest logs).
+
+### Want real emails on free tier? Switch to an HTTP-based provider
+
+These services use HTTPS (port 443) instead of SMTP, so they work on Render free:
+
+| Provider                              | Free quota              |
+| ------------------------------------- | ----------------------- |
+| [Resend](https://resend.com)          | 3,000 emails/month      |
+| [SendGrid](https://sendgrid.com)      | 100 emails/day          |
+| [Mailgun](https://mailgun.com)        | 100 emails/day (trial)  |
+| [Brevo](https://brevo.com) (Sendinblue) | 300 emails/day        |
+
+Minimal swap to **Resend** — `npm install resend`, then replace
+[`src/services/email.service.js`](./src/services/email.service.js) with:
+
+```js
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+async function sendRegistrationEmail(to, name) {
+    await resend.emails.send({
+        from: 'Bank Ledger <onboarding@resend.dev>',  // verified sender
+        to,
+        subject: 'Welcome to Backend Banking System',
+        html: `<p>Hello ${name},</p><p>Thanks for registering.</p>`
+    });
+}
+// ... export the same function names so callers don't change
+```
+
+Then add `RESEND_API_KEY` in Render → Environment.
+
+Alternatively, upgrade to a Render **Starter** plan ($7/mo) which removes the SMTP
+block, and Gmail-OAuth2 Nodemailer keeps working as-is.
+
+---
+
 ## Troubleshooting
 
-| Symptom                                          | Fix                                                                                          |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `MongooseServerSelectionError`                   | Check `MONGO_URI` and that Atlas allows `0.0.0.0/0` (or Render's IPs).                       |
-| App boots locally but crashes on Render          | Check Render logs — usually a missing env var.                                               |
-| Health check failing                             | The service must respond `200` on `/health` within 30s of starting.                          |
-| Free instance sleeps after 15 min of inactivity  | This is normal on Render's free tier. First request after sleep takes ~30s.                  |
-| `Error: listen EADDRINUSE`                       | You hard-coded a port. Use `process.env.PORT` (already fixed in `server.js`).                |
-| MongoDB transactions throw on free Atlas tier    | Transactions require a replica set. Atlas free tier is a replica set by default — should work. |
+| Symptom                                                       | Fix                                                                                          |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Swagger UI shows **"Failed to fetch"** on Execute             | Make sure the `Servers` dropdown at the top of `/api-docs` shows your Render URL. The app reads `RENDER_EXTERNAL_URL` automatically — if it's empty, set `PUBLIC_URL` in env vars. |
+| Logs show `Error configuring email transporter: ETIMEDOUT`    | Render free tier blocks SMTP. Set `EMAIL_ENABLED=false`, or switch to an HTTP provider (see above). |
+| Register API hangs ~5–10 s before responding                  | Was caused by `await` on a blocked SMTP send. Fixed — email is now fire-and-forget.          |
+| `MongooseServerSelectionError`                                | Check `MONGO_URI` and that Atlas allows `0.0.0.0/0` (or Render's IPs).                       |
+| App boots locally but crashes on Render                       | Check Render logs — usually a missing env var.                                               |
+| Health check failing                                          | The service must respond `200` on `/health` within 30s of starting.                          |
+| Free instance sleeps after 15 min of inactivity               | Normal on Render's free tier. First request after sleep takes ~30s.                          |
+| `Error: listen EADDRINUSE`                                    | You hard-coded a port. Use `process.env.PORT` (already fixed in `server.js`).                |
+| MongoDB transactions throw on free Atlas tier                 | Transactions require a replica set. Atlas free tier is a replica set by default — should work. |

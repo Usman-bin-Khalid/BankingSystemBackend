@@ -34,7 +34,10 @@ async  function userRegisterController(req, res) {
         },
         token : token
      });
-     await emailService.sendRegistrationEmail(user.email, user.name);
+     // Fire-and-forget — email must never delay or break the registration response.
+     emailService.sendRegistrationEmail(user.email, user.name).catch((err) => {
+        console.warn('[register] welcome email failed:', err.code || err.message);
+     });
 
 }
 
