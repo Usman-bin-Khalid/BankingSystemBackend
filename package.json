@@ -1,14 +1,23 @@
 {
   "name": "banktransactionsystembackend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Bank Ledger System Backend with double-entry bookkeeping, JWT authentication and email notifications",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx nodemon server.js",
     "start": "node server.js"
   },
-  "keywords": [],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "bank",
+    "ledger",
+    "transactions",
+    "express",
+    "mongodb"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -16,10 +25,13 @@
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cookieparser": "^0.1.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
-    "nodemailer": "^8.0.7"
+    "nodemailer": "^8.0.7",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   }
 }

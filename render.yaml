@@ -1,0 +1,31 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# After pushing to GitHub, go to https://dashboard.render.com/blueprints
+# and point Render at this repo. Render will read this file and create the service.
+
+services:
+  - type: web
+    name: bank-ledger-system
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 18.19.0
+      # Secrets — set these in the Render dashboard, NOT in this file
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_ID
+        sync: false
+      - key: CLIENT_SECRET
+        sync: false
+      - key: REFRESH_TOKEN
+        sync: false
+      - key: EMAIL_USER
+        sync: false
